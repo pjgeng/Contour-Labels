@@ -24,7 +24,7 @@ outputs_QGISLINEINTERSECTIONS_1=processing.runalg('qgis:lineintersections', inpu
 progress.setText("Processing elevations")
 outputs_QGISJOINATTRIBUTESTABLE_1=processing.runalg('qgis:joinattributestable', outputs_QGISLINEINTERSECTIONS_1['OUTPUT'],input_contours,'ID','ID',None)
 outputs_QGISFIELDCALCULATOR_10=processing.runalg('qgis:fieldcalculator', outputs_QGISJOINATTRIBUTESTABLE_1['OUTPUT_LAYER'],'elevation',1,1.0,0.0,True,'"'+str(elevation_field_name)+'"',None)
-outputs_QGISDELETECOLUMN_1=processing.runalg('qgis:deletecolumn',outputs_QGISFIELDCALCULATOR_10['OUTPUT_LAYER'],'elev',None)
+outputs_QGISDELETECOLUMN_1=processing.runalg('qgis:deletecolumn',outputs_QGISFIELDCALCULATOR_10['OUTPUT_LAYER'],str(elevation_field_name),None)
 outputs_QGISFIELDCALCULATOR_11=processing.runalg('qgis:fieldcalculator', outputs_QGISDELETECOLUMN_1['OUTPUT'],'elev',1,1.0,0.0,True,'"elevation"',None)
 outputs_QGISDELETECOLUMN_2=processing.runalg('qgis:deletecolumn',outputs_QGISFIELDCALCULATOR_11['OUTPUT_LAYER'],'elevation',None)
 outputs_QGISDELETECOLUMN_3=processing.runalg('qgis:deletecolumn',outputs_QGISDELETECOLUMN_2['OUTPUT'],'ID_2',None)
