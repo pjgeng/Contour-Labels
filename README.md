@@ -7,7 +7,7 @@ The script is initially designed to be run against data layers in BNG (EPSG:2770
 ## Quick start steps
 1. Create contour layer.
 
-  Ideally from DEM using QGIS' inbuilt contour extractor. For other sources ensure the isolines follow a common pattern - i.e. uphill always on same side. The contour label processing script is developed for a default 5m contour interval, though this can be changed by the user.
+  Ideally from DEM using QGIS' inbuilt contour extractor. For other sources ensure the isolines follow a common pattern - i.e. uphill always on same side. The contour label processing script is developed for a default 5m contour interval, though this can be changed by the user. The contours have to be annotated with their elevation. Ideally using a coloumn called "elev" (QGIS default).
   
   Alternatively use the [**contours.shp** and associated files][os opendata] (1) from the **test** folder in the repository.
 2. Create label guides layer.
@@ -28,6 +28,7 @@ The script is initially designed to be run against data layers in BNG (EPSG:2770
   - **buffer increment**: Depending on your style for the labels you may have to adjust this value to ensure enough space for them and the clips in the final contour output (if selected). The increment is used for the length of the clip and results in _(start_buffer + (label.length()-1)*buffer_increment)_
   - **output contours**: The file to save the clipped output contours to. Temp file by default.
   - **output labels**: The file to save the new labels to. Temp file by default.
+  - **elevation_field_name**: Elevation annotation coloumn name in the contours layer. Default is "elev".
 
 4. Apply the QML style sheets from the repository to see the default effect and identify how the labelling is managed. Default styling and settings are for a 5m interval with index contours every 25m to view at a 1:25k scale.
 
