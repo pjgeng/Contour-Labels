@@ -4,6 +4,7 @@
 ##output_contours=output vector
 ##output_labels=output vector
 ##create_clipped_contours=boolean True
+##smooth_contours=boolean False
 ##invert_labels=boolean False
 ##index_contour_modal=number 25
 ##contour_step=number 5
@@ -19,8 +20,15 @@ def calcDist(p1x,p1y,p2x,p2y):
     return dist
 version = qgis.utils.QGis.QGIS_VERSION.split('-')[0].split('.',2)
 progress.setText("Running Contour Label creation for QGIS version "+str(qgis.utils.QGis.QGIS_VERSION.split('-')[0]))
+if (smooth_contours):
+    progress.setText("Smoothing contours")
+    outputs_GRASSGENERALIZE_1=processing.runalg('grass7:v.generalize',input_contours,9,20,7,50,0.5,3,0,0,0,1,1,1,False,True,None,-1,0.0001,0,None)
+    use_contours=outputs_GRASSGENERALIZE_1['output']
+else:
+    progress.setText("Using existing contours")
+    use_contours=input_contours
 progress.setText("Creating contour intersections")
-outputs_QGISLINEINTERSECTIONS_1=processing.runalg('qgis:lineintersections', input_contours,input_label_guides,'ID','id',None)
+outputs_QGISLINEINTERSECTIONS_1=processing.runalg('qgis:lineintersections',use_contours,input_label_guides,'ID','id',None)
 progress.setText("Processing elevations")
 outputs_QGISJOINATTRIBUTESTABLE_1=processing.runalg('qgis:joinattributestable', outputs_QGISLINEINTERSECTIONS_1['OUTPUT'],input_contours,'ID','ID',None)
 outputs_QGISFIELDCALCULATOR_10=processing.runalg('qgis:fieldcalculator', outputs_QGISJOINATTRIBUTESTABLE_1['OUTPUT_LAYER'],'elevation',1,1.0,0.0,True,'"'+str(elevation_field_name)+'"',None)
@@ -34,7 +42,7 @@ outputs_QGISFIELDCALCULATOR_1=processing.runalg('qgis:fieldcalculator', outputs_
 progress.setText("Calculating label rotation")
 outputs_QGISFIELDCALCULATOR_12=processing.runalg('qgis:fieldcalculator', outputs_QGISFIELDCALCULATOR_1['OUTPUT_LAYER'],'rot',0,6.0,3.0,True,'0',None)
 outputs_QGISFIXEDDISTANCEBUFFER_3=processing.runalg('qgis:fixeddistancebuffer', outputs_QGISFIELDCALCULATOR_1['OUTPUT_LAYER'],2.0,5.0,False,None)
-outputs_QGISINTERSECTION_2=processing.runalg('qgis:intersection', input_contours,outputs_QGISFIXEDDISTANCEBUFFER_3['OUTPUT'],None)
+outputs_QGISINTERSECTION_2=processing.runalg('qgis:intersection', use_contours,outputs_QGISFIXEDDISTANCEBUFFER_3['OUTPUT'],None)
 outputs_QGISFIELDCALCULATOR_2=processing.runalg('qgis:fieldcalculator', outputs_QGISINTERSECTION_2['OUTPUT'],'sint',2,128.0,0.0,True,'geom_to_wkt(start_point($geometry))',None)
 outputs_QGISFIELDCALCULATOR_3=processing.runalg('qgis:fieldcalculator', outputs_QGISFIELDCALCULATOR_2['OUTPUT_LAYER'],'eint',2,128.0,0.0,True,'geom_to_wkt(end_point($geometry))',None)
 if (invert_labels):
@@ -157,7 +165,7 @@ if (create_clipped_contours):
     outputs_QGISEXTRACTBYATTRIBUTE_1=processing.runalg('qgis:extractbyattribute', outputs_QGISFIELDCALCULATOR_8['OUTPUT_LAYER'],'label',0,'1',None)
     outputs_QGISFIXEDDISTANCEBUFFER_1=processing.runalg('qgis:fixeddistancebuffer', outputs_QGISEXTRACTBYATTRIBUTE_1['OUTPUT'],2.0,5.0,False,None)
     outputs_QGISVARIABLEDISTANCEBUFFER_1=processing.runalg('qgis:variabledistancebuffer', outputs_QGISEXTRACTBYATTRIBUTE_1['OUTPUT'],'buffer',5.0,False,None)
-    outputs_QGISINTERSECTION_1=processing.runalg('qgis:intersection', input_contours,outputs_QGISVARIABLEDISTANCEBUFFER_1['OUTPUT'],None)
+    outputs_QGISINTERSECTION_1=processing.runalg('qgis:intersection', use_contours,outputs_QGISVARIABLEDISTANCEBUFFER_1['OUTPUT'],None)
     outputs_QGISMULTIPARTTOSINGLEPARTS_1=processing.runalg('qgis:multiparttosingleparts', outputs_QGISINTERSECTION_1['OUTPUT'],None)
     if (int(version[0]) == 2 and int(version[1]) == 14):
         outputs_QGISEXTRACTBYLOCATION_1=processing.runalg('qgis:extractbylocation', outputs_QGISMULTIPARTTOSINGLEPARTS_1['OUTPUT'],outputs_QGISFIXEDDISTANCEBUFFER_1['OUTPUT'],['intersects','crosses'],None)
@@ -166,9 +174,9 @@ if (create_clipped_contours):
     outputs_QGISFIXEDDISTANCEBUFFER_2=processing.runalg('qgis:fixeddistancebuffer', outputs_QGISEXTRACTBYLOCATION_1['OUTPUT'],2.0,5.0,False,None)
     progress.setText("Returning final clipped contours")
     if (int(version[0]) == 2 and int(version[1]) == 14):
-        outputs_QGISDIFFERENCE_1=processing.runalg('qgis:difference', input_contours,outputs_QGISFIXEDDISTANCEBUFFER_2['OUTPUT'],output_contours)
+        outputs_QGISDIFFERENCE_1=processing.runalg('qgis:difference',use_contours,outputs_QGISFIXEDDISTANCEBUFFER_2['OUTPUT'],output_contours)
     elif (int(version[0]) == 2 and int(version[1]) == 16):
-        outputs_QGISDIFFERENCE_1=processing.runalg('qgis:difference', input_contours,outputs_QGISFIXEDDISTANCEBUFFER_2['OUTPUT'],False,output_contours)
+        outputs_QGISDIFFERENCE_1=processing.runalg('qgis:difference',use_contours,outputs_QGISFIXEDDISTANCEBUFFER_2['OUTPUT'],False,output_contours)
 else:
     output_contours = input_contours
 progress.setText("Cleaning output layers.")
